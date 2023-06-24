@@ -1,0 +1,6 @@
+{
+    "require": {
+        "clue/framework-x": "dev-main",
+        "clue/sse-react": "dev-master"
+    }
+}
