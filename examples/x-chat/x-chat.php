@@ -9,6 +9,9 @@
 //	Last changed on....:  09/06/2023 - CARLIEDU - Copied 10-eventsource.html from clue/php-sse-react/examples/
 //	Last changed on....:  09/06/2023 - CARLIEDU - Copied 10-styles.css from clue/php-sse-react/examples/
 //	Last changed on....:  22/06/2023 - CARLIEDU - Added code from 11-chat.php
+//	Last changed on....:  28/06/2023 - CARLIEDU - As proposed by SimonFrings, $loop->futureTick code changed
+//	Last changed on....:  28/06/2023 - CARLIEDU - Included instantiation of BufferedChannel after instantiation of FrameworkX\App
+//	Last changed on....:  28/06/2023 - CARLIEDU - As proposed by SimonFrings, changed React\Http\Message\Response to send 10-syles.css
 
 	ini_set("display_errors","On"); // activate display_error	
 	error_reporting(E_ALL);
@@ -39,6 +42,7 @@
 
 //------Begin of LOOP
 	$app = new FrameworkX\App($container);
+		$channel = new BufferedChannel();
 
 //=============	/ 		-->	Send file 10-eventsource.html==================
 		$app->get('/', function () {
@@ -51,7 +55,9 @@
 //============= /styles.css	--> Send file 10-styles.css==============
 		$app->get('/styles.css', function (Psr\Http\Message\ServerRequestInterface $request) {
 			echo(date("d/m/Y-H:i:s")." (/x-chat.php) getUri /styles.css   -> Send 10-styles.css \n");
-			return React\Http\Message\Response::html(
+			return new React\Http\Message\Response(
+				React\Http\Message\Response::STATUS_OK,
+				array('Content-Type' => 'text/css; charset=utf-8;'),
 				file_get_contents(__DIR__ . '/10-styles.css')
 			);
 		});
@@ -61,13 +67,15 @@
 			$stream = new ThroughStream();
 			
 			$id = $request->getHeaderLine('Last-Event-ID');
-//			$loop->futureTick(function () use ($channel, $stream, $id) {
-//			    $channel->connect($stream, $id);
-//			});
+			$loop = Loop::get();
+
+			$loop->futureTick(function () use ($channel, $stream, $id) {
+    				$channel->connect($stream, $id);
+			});			
 			
 			$serverParams = $request->getServerParams();
 			echo(date("d/m/Y-H:i:s")." (/x-chat.php) getUri /chat   -> Called from ".$serverParams['REMOTE_ADDR']."\n");
-			$message = array('message' => 'New Browser connbected from '. $serverParams['REMOTE_ADDR']);
+			$message = array('message' => 'New Browser connected from '. $serverParams['REMOTE_ADDR']);
 			$channel->writeMessage(json_encode($message));
 			
 			$stream->on('close', function () use ($stream, $channel, $request, $serverParams) {
