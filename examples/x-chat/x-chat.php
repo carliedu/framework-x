@@ -63,7 +63,7 @@
 		});
 
 //============= /chat		--> Chat begin/User identification ==============
-		$app->get('/chat', function (Psr\Http\Message\ServerRequestInterface $request) {
+		$app->get('/chat', function (Psr\Http\Message\ServerRequestInterface $request) use($channel) {
 			$stream = new ThroughStream();
 			
 			$id = $request->getHeaderLine('Last-Event-ID');
@@ -94,7 +94,7 @@
 		});
 
 //============= /message	--> User typed a message ==============
-		$app->get('/message', function (Psr\Http\Message\ServerRequestInterface $request) {
+		$app->get('/message', function (Psr\Http\Message\ServerRequestInterface $request) use($channel) {
 		            $query = $request->getQueryParams();
 		            $serverParams = $request->getServerParams();
 		            echo(date("d/m/Y-H:i:s")." (/11-chat.php) getUri message received: [".$query['message']."] from: [".$query['username']."] at: [".$serverParams['REMOTE_ADDR']."] \n");
@@ -105,7 +105,7 @@
 		
 		            return new Response(
 		                '201',
-		                array('Content-Type' => 'text/json')
+		                array('Content-Type' => 'text/json;')
 		            );
 		});
 
